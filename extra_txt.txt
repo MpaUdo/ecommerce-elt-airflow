@@ -1,0 +1,31 @@
+# ==== This file is created to keep debugging tips used and other guide used for the project ========
+
+
+========= Before loading or ingesting order.csv raw data to bronze pipeline =========
+=======================We establish a connection on the db: postgresDB=====================
+
+Add connection 
+docker exec -it airflow_scheduler airflow connections add warehouse_postgres --conn-type postgres --conn-host warehouse-postgres --conn-schema ecommerce_warehouse --conn-login warehouse --conn-password warehouse --conn-port 5432
+
+
+Confirm its established
+docker exec -it airflow_scheduler airflow connections get warehouse_postgres
+
+
+============= Noticed for every restart on docker i have to create a new connection========
+====Learnt sabout Fernet keys===== and how it changes per restart for security reasons ======
+
+FIX: GENERATE A FERNET KEY
+docker exec -it airflow_scheduler python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+copy key and add to yaml file
+
+
+======== DELETE OLD CONNECTION =======
+Delete corrupted connection row directly
+docker exec -it airflow_postgres psql -U airflow -d airflow -c "DELETE FROM connection WHERE conn_id='warehouse_postgres';"
+
+Confirm it is gone
+docker exec -it airflow_postgres psql -U airflow -d airflow -c "SELECT conn_id FROM connection;"
+
+Add connection again
